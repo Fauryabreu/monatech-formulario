@@ -15,6 +15,7 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
+fbq('set', 'autoConfig', false, '1595311891984063'); // apaga SubscribedButtonClick y Microdata automáticos
 fbq('init', '1595311891984063');
 fbq('track', 'PageView');
 </script>
@@ -139,6 +140,7 @@ src="https://www.facebook.com/tr?id=1595311891984063&ev=PageView&noscript=1"
   }
   .summary .eyebrow{font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;}
   .summary .msg{font-size:13px;line-height:1.6;color:#2a3648;white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;}
+  .summary .note{font-size:11.5px;color:var(--danger);margin:10px 0 0;font-weight:600;line-height:1.4;}
 
   .cta{
     width:100%;padding:15px;border:none;border-radius:12px;
@@ -226,6 +228,7 @@ src="https://www.facebook.com/tr?id=1595311891984063&ev=PageView&noscript=1"
     <div class="summary" id="summary">
       <p class="eyebrow">Esto se enviará por WhatsApp</p>
       <p class="msg" id="msgPreview"></p>
+      <p class="note">⚠️ No borres el mensaje antes de enviarlo — así sabemos exactamente qué necesitas.</p>
     </div>
 
     <button class="cta" id="ctaBtn" disabled>
