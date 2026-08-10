@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mona Tech — Cotiza tu instalación</title>
+
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1595311891984063');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1595311891984063&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+
+<!--
+  Recomendado en serio, no opcional: pareja esto con Conversions
+  API (server-side) usando el mismo event_id para deduplicar.
+  Un pixel solo de navegador pierde señal con iOS14.5+ y bloqueadores.
+-->
+
+<style>
+  :root{
+    --navy-950:#0a121f;
+    --navy-900:#0f1b2d;
+    --navy-800:#16283f;
+    --navy-700:#1c3350;
+    --green:#8bc540;
+    --green-dark:#6ea62d;
+    --white:#ffffff;
+    --ink:#0f1b2d;
+    --muted:#6b7787;
+    --border:#e3e7ee;
+    --danger:#d64545;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(180deg,var(--navy-950) 0%,var(--navy-900) 55%,var(--navy-800) 100%);
+    color:var(--white);
+    min-height:100vh;
+    padding:32px 16px 64px;
+  }
+  .wrap{max-width:440px;margin:0 auto;}
+  .logo{
+    width:56px;height:56px;border-radius:16px;
+    background:var(--navy-800);
+    border:1px solid rgba(139,197,64,.35);
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 18px;
+    box-shadow:0 0 0 4px rgba(139,197,64,.08);
+  }
+  .logo svg{width:28px;height:28px;}
+  h1{
+    text-align:center;font-size:26px;line-height:1.25;
+    font-weight:800;margin:0 0 18px;letter-spacing:-.01em;
+  }
+  h1 span{color:var(--green);}
+  .badges{
+    display:flex;gap:8px;justify-content:center;margin-bottom:26px;
+  }
+  .badge{
+    flex:1;background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:10px;text-align:center;padding:10px 6px;
+  }
+  .badge b{display:block;font-size:14px;}
+  .badge span{display:block;font-size:9px;letter-spacing:.04em;color:#9fb0c3;margin-top:2px;text-transform:uppercase;}
+
+  .card{
+    background:var(--white);color:var(--ink);
+    border-radius:20px;padding:24px 20px;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
+  }
+  .label{font-size:13px;font-weight:700;margin:0 0 10px;}
+  .section{margin-bottom:22px;}
+  .kits{display:flex;flex-direction:column;gap:10px;}
+  .kit{
+    border:2px solid var(--border);border-radius:14px;
+    padding:12px 14px;display:flex;justify-content:space-between;align-items:center;
+    cursor:pointer;transition:.15s;
+  }
+  .kit:hover{border-color:#c9d3e0;}
+  .kit.selected{border-color:var(--navy-800);background:var(--navy-900);color:#fff;}
+  .kit-left b{display:block;font-size:14.5px;}
+  .kit-left span{display:block;font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .kit.selected .kit-left span{color:#9fb0c3;}
+  .kit-price{font-size:16px;font-weight:800;}
+  .kit-badge{
+    font-size:9px;font-weight:700;background:var(--green);color:#0f1b2d;
+    padding:2px 7px;border-radius:20px;margin-left:6px;letter-spacing:.02em;
+  }
+
+  input[type=text],input[type=tel]{
+    width:100%;padding:12px 14px;border:1.5px solid var(--border);
+    border-radius:10px;font-size:14.5px;font-family:inherit;outline:none;
+  }
+  input:focus{border-color:var(--navy-800);}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:5px;}
+  .err{font-size:11.5px;color:var(--danger);margin-top:5px;display:none;}
+
+  .pill-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .pill{
+    flex:1;min-width:70px;text-align:center;padding:11px 8px;
+    border:1.5px solid var(--border);border-radius:10px;
+    font-size:13px;font-weight:700;cursor:pointer;transition:.15s;
+  }
+  .pill:hover{border-color:#c9d3e0;}
+  .pill.selected{background:var(--green);border-color:var(--green);color:#0f1b2d;}
+  .pill.selected.no-variant{background:var(--navy-900);border-color:var(--navy-900);color:#fff;}
+  .pill small{display:block;font-size:9.5px;font-weight:600;opacity:.75;margin-top:2px;}
+
+  .blocked{
+    display:none;background:#fff6f0;border:1.5px solid #f2c9a6;
+    border-radius:14px;padding:16px;margin-top:4px;
+  }
+  .blocked p{margin:0 0 12px;font-size:13.5px;line-height:1.5;}
+  .blocked b{color:var(--danger);}
+  .blocked input{margin-bottom:8px;}
+  .blocked button{
+    width:100%;padding:11px;border:none;border-radius:10px;
+    background:var(--navy-900);color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;
+  }
+
+  .summary{
+    background:#f7f9fc;border-radius:14px;padding:16px;margin-bottom:20px;
+    display:none;
+  }
+  .summary .eyebrow{font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;}
+  .summary .msg{font-size:13px;line-height:1.6;color:#2a3648;white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;}
+
+  .cta{
+    width:100%;padding:15px;border:none;border-radius:12px;
+    background:var(--green);color:#0f1b2d;font-size:15.5px;font-weight:800;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:.15s;
+  }
+  .cta:disabled{background:#dfe4ea;color:#9aa4b2;cursor:not-allowed;}
+  .cta:not(:disabled):hover{background:var(--green-dark);}
+
+  .disclaimer{font-size:10.5px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.5;}
+
+  /* Panel de debug — quítalo cuando ya tengas el Pixel real conectado */
+  .debug{
+    margin-top:22px;background:rgba(255,255,255,.05);
+    border:1px dashed rgba(255,255,255,.25);border-radius:12px;
+    padding:14px 16px;font-size:11.5px;color:#c8d3e0;
+  }
+  .debug b{color:var(--green);display:block;margin-bottom:6px;font-size:11px;letter-spacing:.03em;text-transform:uppercase;}
+  .debug pre{margin:0;white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.5;color:#e6ecf3;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3z" stroke="#8bc540" stroke-width="1.6"/><circle cx="12" cy="11" r="2.6" stroke="#8bc540" stroke-width="1.6"/></svg>
+  </div>
+
+  <h1>Proteger tu hogar<br><span>cuesta menos de lo que piensas</span></h1>
+
+  <div class="badges">
+    <div class="badge"><b>500+</b><span>Instalaciones</span></div>
+    <div class="badge"><b>4.8/5</b><span>Satisfacción</span></div>
+    <div class="badge"><b>24h</b><span>Respuesta</span></div>
+  </div>
+
+  <div class="card">
+
+    <div class="section">
+      <p class="label">Elige tu kit</p>
+      <div class="kits" id="kits"></div>
+    </div>
+
+    <div class="section">
+      <p class="label">Nombre completo</p>
+      <input type="text" id="nombre" placeholder="Ej. Juan Pérez">
+    </div>
+
+    <div class="section">
+      <p class="label">Tu WhatsApp</p>
+      <input type="tel" id="telefono" placeholder="809-000-0000">
+      <p class="err" id="telErr">Escribe un número dominicano válido (809/829/849 + 7 dígitos).</p>
+    </div>
+
+    <div class="section">
+      <p class="label">¿Vives en Santo Domingo?</p>
+      <div class="pill-row">
+        <div class="pill" data-group="sd" data-value="si">Sí</div>
+        <div class="pill no-variant" data-group="sd" data-value="no">No</div>
+      </div>
+      <div class="blocked" id="blocked">
+        <p>Por ahora solo instalamos en <b>Santo Domingo</b>. Déjanos tu correo y te avisamos apenas lleguemos a tu zona.</p>
+        <input type="text" id="emailFuera" placeholder="tu@correo.com">
+        <button id="btnFuera" type="button">Notificarme</button>
+      </div>
+    </div>
+
+    <div class="section" id="urgenciaSection">
+      <p class="label">¿Qué tan pronto quieres instalar?</p>
+      <div class="pill-row">
+        <div class="pill" data-group="urg" data-value="ya_mismo">Ya mismo</div>
+        <div class="pill" data-group="urg" data-value="3_meses">3 meses</div>
+        <div class="pill" data-group="urg" data-value="6_meses">6 meses</div>
+      </div>
+    </div>
+
+    <div class="summary" id="summary">
+      <p class="eyebrow">Esto se enviará por WhatsApp</p>
+      <p class="msg" id="msgPreview"></p>
+    </div>
+
+    <button class="cta" id="ctaBtn" disabled>
+      Cotizar por WhatsApp →
+    </button>
+    <p class="disclaimer">Al enviar aceptas que Mona Tech te contacte por WhatsApp sobre esta cotización.</p>
+  </div>
+
+  <div class="debug" id="debugPanel">
+    <b>Debug — evento Meta Pixel (quita este panel al conectar tu Pixel real)</b>
+    <pre id="debugContent">Completa el formulario para ver qué evento se dispararía…</pre>
+  </div>
+
+</div>
+
+<script>
+const WHATSAPP_NUMBER = "18093234999"; // +1 809-323-4999, sin + ni guiones
+
+const KITS = [
+  {id:"kit4", label:"Kit de 4 cámaras", price:14995, spec:"Full HD 1080p, color noche y audio"},
+  {id:"kit6", label:"Kit de 6 cámaras", price:19995, spec:"Full HD 1080p, color noche y audio", badge:"Más popular"},
+  {id:"kit8", label:"Kit de 8 cámaras", price:24995, spec:"Full HD 1080p, color noche y audio"},
+];
+
+const state = { kit:null, sd:null, urg:null };
+
+const kitsEl = document.getElementById("kits");
+KITS.forEach(k=>{
+  const div = document.createElement("div");
+  div.className = "kit";
+  div.dataset.id = k.id;
+  div.innerHTML = `
+    <div class="kit-left">
+      <b>${k.label}${k.badge ? `<span class="kit-badge">${k.badge}</span>`:""}</b>
+      <span>${k.spec}</span>
+    </div>
+    <div class="kit-price">RD$${k.price.toLocaleString("es-DO")}</div>`;
+  div.addEventListener("click", ()=>{
+    document.querySelectorAll(".kit").forEach(el=>el.classList.remove("selected"));
+    div.classList.add("selected");
+    state.kit = k;
+    render();
+  });
+  kitsEl.appendChild(div);
+});
+
+document.querySelectorAll(".pill[data-group]").forEach(p=>{
+  p.addEventListener("click", ()=>{
+    const group = p.dataset.group;
+    document.querySelectorAll(`.pill[data-group="${group}"]`).forEach(el=>el.classList.remove("selected"));
+    p.classList.add("selected");
+    state[group] = p.dataset.value;
+    render();
+  });
+});
+
+const telInput = document.getElementById("telefono");
+function telValido(v){
+  const digits = v.replace(/\D/g,"");
+  return /^(809|829|849)\d{7}$/.test(digits);
+}
+
+function render(){
+  const blocked = document.getElementById("blocked");
+  const urgSection = document.getElementById("urgenciaSection");
+  const summary = document.getElementById("summary");
+  const cta = document.getElementById("ctaBtn");
+
+  // Vive fuera de SD → bloquea el flujo principal, ofrece captura alterna
+  if(state.sd === "no"){
+    blocked.style.display = "block";
+    urgSection.style.display = "none";
+    summary.style.display = "none";
+    cta.disabled = true;
+    updateDebug(null);
+    return;
+  } else {
+    blocked.style.display = "none";
+    urgSection.style.display = "block";
+  }
+
+  const nombre = document.getElementById("nombre").value.trim();
+  const telefono = telInput.value.trim();
+  const listo = state.kit && state.sd === "si" && state.urg && nombre && telValido(telefono);
+
+  if(state.kit && nombre && telefono){
+    const msg = buildMessage(nombre, telefono);
+    document.getElementById("msgPreview").textContent = msg;
+    summary.style.display = "block";
+  } else {
+    summary.style.display = "none";
+  }
+
+  cta.disabled = !listo;
+  updateDebug(listo ? computeEvent() : null);
+}
+
+function buildMessage(nombre, telefono){
+  const urgLabel = {ya_mismo:"Ya mismo", "3_meses":"Dentro de 3 meses", "6_meses":"Dentro de 6 meses"}[state.urg] || "—";
+  return `Hola, soy ${nombre}.
+Quiero cotizar: ${state.kit ? state.kit.label + " (RD$" + state.kit.price.toLocaleString("es-DO") + ")" : "—"}
+📍 Vivo en Santo Domingo: Sí
+🕒 Interés: ${urgLabel}
+📱 Mi WhatsApp: ${telefono}`;
+}
+
+// Lógica de valor gradual: "ya mismo" pesa más que "3 meses".
+// "6 meses" no dispara evento de conversión calificada (solo explora).
+function computeEvent(){
+  const valueMap = { ya_mismo: 3, "3_meses": 1, "6_meses": 0 };
+  const value = valueMap[state.urg] ?? 0;
+  return {
+    should_fire: value > 0,
+    event_name: "Lead",
+    params: {
+      value,
+      currency: "DOP",
+      content_name: state.kit ? state.kit.id : null,
+      urgencia: state.urg
+    }
+  };
+}
+
+function updateDebug(evt){
+  const el = document.getElementById("debugContent");
+  if(!evt){
+    el.textContent = state.sd === "no"
+      ? "SD = No → lead fuera de zona. No se dispara evento de conversión calificada."
+      : "Completa el formulario para ver qué evento se dispararía…";
+    return;
+  }
+  el.textContent = evt.should_fire
+    ? `fbq('track', '${evt.event_name}', ${JSON.stringify(evt.params, null, 2)})`
+    : `No se dispara (urgencia = 6 meses → solo explorando, se guarda el lead pero sin evento de conversión).`;
+}
+
+document.getElementById("nombre").addEventListener("input", render);
+telInput.addEventListener("input", ()=>{
+  document.getElementById("telErr").style.display = telInput.value && !telValido(telInput.value) ? "block" : "none";
+  render();
+});
+
+document.getElementById("ctaBtn").addEventListener("click", ()=>{
+  const nombre = document.getElementById("nombre").value.trim();
+  const telefono = telInput.value.trim();
+  const msg = buildMessage(nombre, telefono);
+  const evt = computeEvent();
+
+  if(evt.should_fire){
+    if(typeof fbq === "function"){
+      fbq('track', evt.event_name, evt.params);
+    } else {
+      console.log("[Meta Pixel simulado]", evt.event_name, evt.params);
+    }
+  }
+
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  window.open(url, "_blank");
+});
+
+document.getElementById("btnFuera").addEventListener("click", ()=>{
+  const email = document.getElementById("emailFuera").value.trim();
+  if(!email || !email.includes("@")){ return; }
+  // Aquí NO se dispara el evento "Lead" calificado — opcionalmente puedes
+  // disparar un evento aparte para remarketing (ej. "LeadFueraDeZona")
+  // sin contaminar la audiencia de leads calificados que alimenta tus campañas.
+  if(typeof fbq === "function"){
+    fbq('trackCustom', 'LeadFueraDeZona', {email});
+  } else {
+    console.log("[Meta Pixel simulado] trackCustom LeadFueraDeZona", {email});
+  }
+  document.getElementById("blocked").innerHTML = "<p>Listo, te avisamos apenas lleguemos a tu zona. 🙌</p>";
+});
+
+render();
+</script>
+</body>
+</html>
