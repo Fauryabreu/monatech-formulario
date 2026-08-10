@@ -151,14 +151,21 @@ src="https://www.facebook.com/tr?id=1595311891984063&ev=PageView&noscript=1"
 
   .disclaimer{font-size:10.5px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.5;}
 
-  /* Panel de debug — quítalo cuando ya tengas el Pixel real conectado */
-  .debug{
+  .info-card{
     margin-top:22px;background:rgba(255,255,255,.05);
-    border:1px dashed rgba(255,255,255,.25);border-radius:12px;
-    padding:14px 16px;font-size:11.5px;color:#c8d3e0;
+    border:1px solid rgba(255,255,255,.08);border-radius:16px;
+    padding:20px;
   }
-  .debug b{color:var(--green);display:block;margin-bottom:6px;font-size:11px;letter-spacing:.03em;text-transform:uppercase;}
-  .debug pre{margin:0;white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.5;color:#e6ecf3;}
+  .info-title{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9fb0c3;margin:0 0 12px;}
+  .services{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .service-tag{
+    background:rgba(139,197,64,.12);border:1px solid rgba(139,197,64,.32);
+    color:#dcefc0;font-size:12px;font-weight:600;padding:6px 11px;border-radius:20px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .info-row{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:#c8d3e0;margin-top:9px;line-height:1.4;}
+  .info-row svg{width:15px;height:15px;flex-shrink:0;margin-top:1px;}
+  .info-divider{height:1px;background:rgba(255,255,255,.08);margin:14px 0;}
 </style>
 </head>
 <body>
@@ -227,9 +234,23 @@ src="https://www.facebook.com/tr?id=1595311891984063&ev=PageView&noscript=1"
     <p class="disclaimer">Al enviar aceptas que Mona Tech te contacte por WhatsApp sobre esta cotización.</p>
   </div>
 
-  <div class="debug" id="debugPanel">
-    <b>Debug — evento Meta Pixel (quita este panel al conectar tu Pixel real)</b>
-    <pre id="debugContent">Completa el formulario para ver qué evento se dispararía…</pre>
+  <div class="info-card">
+    <p class="info-title">Qué hacemos</p>
+    <div class="services">
+      <span class="service-tag">📷 Instalación de cámaras de seguridad</span>
+      <span class="service-tag">🔐 Control de acceso</span>
+      <span class="service-tag">🚪 Motores para portones</span>
+      <span class="service-tag">🔔 Alarmas e intercom</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8bc540" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>
+      <span>L–V: 8:00 am – 6:00 pm</span>
+    </div>
+    <div class="info-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8bc540" stroke-width="1.8"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
+      <span>Av. Independencia km. 10, Santo Domingo, República Dominicana</span>
+    </div>
   </div>
 
 </div>
@@ -293,7 +314,6 @@ function render(){
     urgSection.style.display = "none";
     summary.style.display = "none";
     cta.disabled = true;
-    updateDebug(null);
     return;
   } else {
     blocked.style.display = "none";
@@ -313,7 +333,6 @@ function render(){
   }
 
   cta.disabled = !listo;
-  updateDebug(listo ? computeEvent() : null);
 }
 
 function buildMessage(nombre, telefono){
@@ -340,19 +359,6 @@ function computeEvent(){
       urgencia: state.urg
     }
   };
-}
-
-function updateDebug(evt){
-  const el = document.getElementById("debugContent");
-  if(!evt){
-    el.textContent = state.sd === "no"
-      ? "SD = No → lead fuera de zona. No se dispara evento de conversión calificada."
-      : "Completa el formulario para ver qué evento se dispararía…";
-    return;
-  }
-  el.textContent = evt.should_fire
-    ? `fbq('track', '${evt.event_name}', ${JSON.stringify(evt.params, null, 2)})`
-    : `No se dispara (urgencia = 6 meses → solo explorando, se guarda el lead pero sin evento de conversión).`;
 }
 
 document.getElementById("nombre").addEventListener("input", render);
