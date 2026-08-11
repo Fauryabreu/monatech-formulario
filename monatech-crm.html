@@ -143,11 +143,14 @@ function cardHTML(l){
 }
 
 async function cargarLeads(){
-  const board = document.getElementById("board");
   const { data, error } = await sb.from("leads").select("*").order("created_at", {ascending:false});
 
   if(error){
-    board.innerHTML = `<p class="empty">No se pudieron cargar los leads: ${error.message}</p>`;
+    const msg = `<p class="empty">Error: ${error.message}</p>`;
+    document.getElementById("colCalif").innerHTML = msg;
+    document.getElementById("colNoCalif").innerHTML = msg;
+    document.getElementById("colFuera").innerHTML = msg;
+    console.log("Error cargando leads:", error);
     return;
   }
 
@@ -167,7 +170,9 @@ async function cargarLeads(){
 async function mostrarDashboard(){
   loginScreen.style.display = "none";
   dashScreen.style.display = "block";
-  document.getElementById("board").innerHTML = `<p class="loading">Cargando leads…</p>`;
+  document.getElementById("colCalif").innerHTML = `<p class="loading">Cargando…</p>`;
+  document.getElementById("colNoCalif").innerHTML = `<p class="loading">Cargando…</p>`;
+  document.getElementById("colFuera").innerHTML = `<p class="loading">Cargando…</p>`;
   await cargarLeads();
 }
 
