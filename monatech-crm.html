@@ -149,9 +149,10 @@ function mensajeSaludo(l){
   const nombre = l.name ? l.name.trim().split(" ")[0] : "";
   const kitTxt = l.kit || "nuestros kits de cámaras";
   const planTxt = l.plan ? ` (Plan ${planLabel(l.plan)})` : "";
-  return `Hola${nombre ? " " + nombre : ""}! 👋
-Vimos que estás interesado en ${kitTxt}${planTxt}.
-Cuéntame, ¿es para tu casa o tu negocio? Así te armo la mejor propuesta 😊`;
+  const precioTxt = l.kit_price ? ` — RD$${Number(l.kit_price).toLocaleString("es-DO")}` : "";
+  return `Hola${nombre ? " " + nombre : ""}!
+Vimos que estás interesado/a en ${kitTxt}${planTxt}${precioTxt}.
+Cuéntame, ¿es para tu casa o tu negocio? Y coméntame dónde vives exactamente, así te armo la mejor propuesta.`;
 }
 function waLinkConMensaje(l){
   const base = waLink(l.phone);
