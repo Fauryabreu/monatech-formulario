@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mona Tech — Panel de leads</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  :root{
+    --navy-950:#0a121f; --navy-900:#0f1b2d; --navy-800:#16283f;
+    --green:#8bc540; --green-dark:#6ea62d;
+    --white:#ffffff; --ink:#0f1b2d; --muted:#6b7787; --border:#e3e7ee;
+    --danger:#d64545; --amber:#c98a1e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(180deg,var(--navy-950) 0%,var(--navy-900) 55%,var(--navy-800) 100%);
+    color:#fff; min-height:100vh;
+  }
+
+  /* ---- Login ---- */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .loginCard{
+    background:#fff; color:var(--ink); border-radius:20px; padding:32px 26px;
+    width:100%; max-width:360px; box-shadow:0 20px 50px rgba(0,0,0,.35);
+  }
+  .loginCard h1{font-size:20px; margin:0 0 4px;}
+  .loginCard p{font-size:13px; color:var(--muted); margin:0 0 22px;}
+  .loginCard input{
+    width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:10px;
+    font-size:14.5px; margin-bottom:12px; font-family:inherit;
+  }
+  .loginCard button{
+    width:100%; padding:13px; border:none; border-radius:10px; background:var(--navy-900);
+    color:#fff; font-weight:700; font-size:14.5px; cursor:pointer;
+  }
+  .loginErr{color:var(--danger); font-size:12.5px; margin:-4px 0 12px; display:none;}
+
+  /* ---- Dashboard ---- */
+  #dashScreen{display:none; padding:24px 20px 60px; max-width:1400px; margin:0 auto;}
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:10px;}
+  .topbar h1{font-size:20px; margin:0;}
+  .topbar .actions{display:flex; gap:8px;}
+  .topbar button{
+    padding:9px 14px; border-radius:9px; border:1px solid rgba(255,255,255,.2);
+    background:rgba(255,255,255,.06); color:#fff; font-size:12.5px; font-weight:600; cursor:pointer;
+  }
+  .topbar button:hover{background:rgba(255,255,255,.12);}
+
+  .board{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media (max-width:900px){ .board{grid-template-columns:1fr; } }
+
+  .col{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px; min-height:120px;}
+  .col-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding:0 4px;}
+  .col-head h2{font-size:13px; font-weight:700; letter-spacing:.02em; margin:0;}
+  .col-count{background:rgba(255,255,255,.12); border-radius:20px; padding:2px 9px; font-size:11.5px; font-weight:700;}
+
+  .col.calif .col-head h2{color:var(--green);}
+  .col.nocalif .col-head h2{color:var(--amber);}
+  .col.fuera .col-head h2{color:#9fb0c3;}
+
+  .card{
+    background:#fff; color:var(--ink); border-radius:12px; padding:13px 14px; margin-bottom:10px;
+    font-size:13px; line-height:1.5;
+  }
+  .card .name{font-weight:800; font-size:14px; margin-bottom:2px;}
+  .card .row{color:var(--muted); font-size:12px;}
+  .card .kit{margin-top:6px; font-weight:600;}
+  .card .date{margin-top:8px; font-size:10.5px; color:#a0abb8; text-transform:uppercase; letter-spacing:.03em;}
+  .empty{color:#8290a3; font-size:12.5px; padding:14px 4px;}
+
+  .loading{padding:60px 0; text-align:center; color:#9fb0c3; font-size:13px;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="loginCard">
+    <h1>Panel de leads — Mona Tech</h1>
+    <p>Acceso privado. Inicia sesión con tu cuenta de Supabase.</p>
+    <input type="email" id="email" placeholder="tu@correo.com">
+    <input type="password" id="password" placeholder="Contraseña">
+    <p class="loginErr" id="loginErr">Correo o contraseña incorrectos.</p>
+    <button id="btnLogin">Iniciar sesión</button>
+  </div>
+</div>
+
+<div id="dashScreen">
+  <div class="topbar">
+    <h1>Leads — Mona Tech</h1>
+    <div class="actions">
+      <button id="btnRefresh">↻ Actualizar</button>
+      <button id="btnLogout">Cerrar sesión</button>
+    </div>
+  </div>
+  <div class="board" id="board">
+    <div class="col calif">
+      <div class="col-head"><h2>✅ Calificados</h2><span class="col-count" id="countCalif">0</span></div>
+      <div id="colCalif"></div>
+    </div>
+    <div class="col nocalif">
+      <div class="col-head"><h2>⚠️ No calificados</h2><span class="col-count" id="countNoCalif">0</span></div>
+      <div id="colNoCalif"></div>
+    </div>
+    <div class="col fuera">
+      <div class="col-head"><h2>📍 No viven en SD</h2><span class="col-count" id="countFuera">0</span></div>
+      <div id="colFuera"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://zufackerrxtiaaqaqvme.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1ZmFja2Vycnh0aWFhcWFxdm1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MDc0NjksImV4cCI6MjEwMTk4MzQ2OX0.MfvA9LHf__kKaVaTTG9gxXb4ZbmtsbsSH-23KftXaPY";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const loginScreen = document.getElementById("loginScreen");
+const dashScreen = document.getElementById("dashScreen");
+
+function urgLabel(u){
+  return {ya_mismo:"Ya mismo", "3_meses":"3 meses", "6_meses":"6 meses"}[u] || "—";
+}
+function fecha(iso){
+  const d = new Date(iso);
+  return d.toLocaleDateString("es-DO", {day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"});
+}
+function planLabel(p){
+  return {basico:"Básico", standard:"Standard", premium:"Premium"}[p] || null;
+}
+function cardHTML(l){
+  return `
+    <div class="card">
+      <div class="name">${l.name || "Sin nombre"}</div>
+      <div class="row">${l.phone || "Sin teléfono"}${l.email ? " · " + l.email : ""}</div>
+      ${l.kit ? `<div class="kit">${l.kit}${l.kit_price ? " · RD$" + Number(l.kit_price).toLocaleString("es-DO") : ""}</div>` : ""}
+      ${l.plan ? `<div class="row">Plan: ${planLabel(l.plan)}</div>` : ""}
+      ${l.urgency ? `<div class="row">Interés: ${urgLabel(l.urgency)}</div>` : ""}
+      <div class="date">${fecha(l.created_at)}</div>
+    </div>`;
+}
+
+async function cargarLeads(){
+  const board = document.getElementById("board");
+  const { data, error } = await sb.from("leads").select("*").order("created_at", {ascending:false});
+
+  if(error){
+    board.innerHTML = `<p class="empty">No se pudieron cargar los leads: ${error.message}</p>`;
+    return;
+  }
+
+  const calif = data.filter(l => l.estado === "CALIFICA");
+  const noCalif = data.filter(l => l.estado === "NO CALIFICA");
+  const fuera = data.filter(l => l.estado === "NO VIVE EN SD");
+
+  document.getElementById("countCalif").textContent = calif.length;
+  document.getElementById("countNoCalif").textContent = noCalif.length;
+  document.getElementById("countFuera").textContent = fuera.length;
+
+  document.getElementById("colCalif").innerHTML = calif.length ? calif.map(cardHTML).join("") : `<p class="empty">Sin leads todavía.</p>`;
+  document.getElementById("colNoCalif").innerHTML = noCalif.length ? noCalif.map(cardHTML).join("") : `<p class="empty">Sin leads todavía.</p>`;
+  document.getElementById("colFuera").innerHTML = fuera.length ? fuera.map(cardHTML).join("") : `<p class="empty">Sin leads todavía.</p>`;
+}
+
+async function mostrarDashboard(){
+  loginScreen.style.display = "none";
+  dashScreen.style.display = "block";
+  document.getElementById("board").innerHTML = `<p class="loading">Cargando leads…</p>`;
+  await cargarLeads();
+}
+
+document.getElementById("btnLogin").addEventListener("click", async ()=>{
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const errEl = document.getElementById("loginErr");
+  errEl.style.display = "none";
+
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){
+    errEl.style.display = "block";
+    return;
+  }
+  mostrarDashboard();
+});
+
+document.getElementById("btnRefresh").addEventListener("click", cargarLeads);
+
+document.getElementById("btnLogout").addEventListener("click", async ()=>{
+  await sb.auth.signOut();
+  dashScreen.style.display = "none";
+  loginScreen.style.display = "flex";
+});
+
+// Si ya había una sesión activa (recargaste la página), entra directo.
+sb.auth.getSession().then(({data})=>{
+  if(data.session){ mostrarDashboard(); }
+});
+</script>
+</body>
+</html>
