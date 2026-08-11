@@ -145,8 +145,21 @@ function waLink(phone){
 function planLabel(p){
   return {basico:"Básico", standard:"Standard", premium:"Premium"}[p] || null;
 }
+function mensajeSaludo(l){
+  const nombre = l.name ? l.name.trim().split(" ")[0] : "";
+  const kitTxt = l.kit || "nuestros kits de cámaras";
+  const planTxt = l.plan ? ` (Plan ${planLabel(l.plan)})` : "";
+  return `Hola${nombre ? " " + nombre : ""}! 👋
+Vimos que estás interesado en ${kitTxt}${planTxt}.
+Cuéntame, ¿es para tu casa o tu negocio? Así te armo la mejor propuesta 😊`;
+}
+function waLinkConMensaje(l){
+  const base = waLink(l.phone);
+  if(!base) return null;
+  return `${base}?text=${encodeURIComponent(mensajeSaludo(l))}`;
+}
 function cardHTML(l){
-  const link = waLink(l.phone);
+  const link = waLinkConMensaje(l);
   return `
     <div class="card">
       <div class="name">${l.name || "Sin nombre"}</div>
