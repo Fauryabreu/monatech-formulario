@@ -229,8 +229,9 @@ src="https://www.facebook.com/tr?id=1595311891984063&ev=PageView&noscript=1"
         <div class="pill no-variant" data-group="sd" data-value="no">No</div>
       </div>
       <div class="blocked" id="blocked">
-        <p>Por ahora solo instalamos en <b>Santo Domingo</b>. Déjanos tu correo y te avisamos apenas lleguemos a tu zona.</p>
+        <p>Por ahora solo instalamos en <b>Santo Domingo</b>. Completa tu nombre y teléfono arriba, déjanos tu correo, y te avisamos apenas lleguemos a tu zona.</p>
         <input type="text" id="emailFuera" placeholder="tu@correo.com">
+        <p class="err" id="fueraErr" style="display:none;">Completa tu nombre, teléfono y correo antes de enviar.</p>
         <button id="btnFuera" type="button">Notificarme</button>
       </div>
     </div>
@@ -381,8 +382,6 @@ function renderKits(){
 }
 renderKits();
 
-let fueraDeZonaGuardado = false;
-
 document.querySelectorAll(".pill[data-group]").forEach(p=>{
   p.addEventListener("click", ()=>{
     const group = p.dataset.group;
@@ -390,24 +389,6 @@ document.querySelectorAll(".pill[data-group]").forEach(p=>{
     p.classList.add("selected");
     state[group] = p.dataset.value;
     render();
-
-    // Guarda el lead no calificado en cuanto dice "No", sin esperar a que
-    // deje su correo. Nunca dispara pixel — este tráfico no debe llegarle a Meta.
-    if(group === "sd" && p.dataset.value === "no" && !fueraDeZonaGuardado){
-      fueraDeZonaGuardado = true;
-      guardarLeadEnSupabase({
-        name: document.getElementById("nombre").value.trim() || null,
-        phone: telInput.value.trim() || null,
-        email: null,
-        kit: state.kit ? state.kit.label : null,
-        kit_price: state.kit ? state.kit.price : null,
-        plan: state.plan,
-        lives_in_sd: false,
-        urgency: null,
-        qualified: false,
-        estado: "NO VIVE EN SD"
-      });
-    }
   });
 });
 
@@ -517,16 +498,21 @@ document.getElementById("ctaBtn").addEventListener("click", ()=>{
 
 document.getElementById("btnFuera").addEventListener("click", ()=>{
   const email = document.getElementById("emailFuera").value.trim();
-  if(!email || !email.includes("@")){ return; }
   const nombre = document.getElementById("nombre").value.trim();
   const telefono = telInput.value.trim();
-  // Este tráfico nunca dispara pixel — el registro al elegir "No" ya se guardó
-  // sin correo; aquí solo se agrega un segundo registro con el correo, para
-  // no arriesgar sobrescribir datos de otros leads con una llave pública.
+  const errEl = document.getElementById("fueraErr");
 
+  const completo = nombre && telValido(telefono) && email && email.includes("@");
+  if(!completo){
+    errEl.style.display = "block";
+    return;
+  }
+  errEl.style.display = "none";
+
+  // Este tráfico nunca dispara pixel — solo se guarda si viene completo.
   guardarLeadEnSupabase({
-    name: nombre || null,
-    phone: telefono || null,
+    name: nombre,
+    phone: telefono,
     email: email,
     kit: state.kit ? state.kit.label : null,
     kit_price: state.kit ? state.kit.price : null,
