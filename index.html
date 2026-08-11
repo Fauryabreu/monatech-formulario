@@ -87,6 +87,16 @@ src="https://www.facebook.com/tr?id=1595311891984063&ev=PageView&noscript=1"
   .label{font-size:13px;font-weight:700;margin:0 0 10px;}
   .section{margin-bottom:22px;}
   .kits{display:flex;flex-direction:column;gap:10px;}
+  .planes{display:flex; flex-direction:column; gap:10px;}
+  .plan{
+    border:2px solid var(--border); border-radius:14px; padding:12px 14px;
+    cursor:pointer; transition:.15s;
+  }
+  .plan:hover{border-color:#c9d3e0;}
+  .plan.selected{border-color:var(--navy-800); background:var(--navy-900); color:#fff;}
+  .plan b{display:block; font-size:14.5px;}
+  .plan span{display:block; font-size:11.5px; color:var(--muted); margin-top:2px;}
+  .plan.selected span{color:#9fb0c3;}
   .kit{
     border:2px solid var(--border);border-radius:14px;
     padding:12px 14px;display:flex;justify-content:space-between;align-items:center;
@@ -188,6 +198,11 @@ src="https://www.facebook.com/tr?id=1595311891984063&ev=PageView&noscript=1"
   <div class="card">
 
     <div class="section">
+      <p class="label">Elige tu plan</p>
+      <div class="planes" id="planes"></div>
+    </div>
+
+    <div class="section">
       <p class="label">Elige tu kit</p>
       <div class="kits" id="kits"></div>
     </div>
@@ -196,6 +211,10 @@ src="https://www.facebook.com/tr?id=1595311891984063&ev=PageView&noscript=1"
       <p class="label">Nombre completo</p>
       <input type="text" id="nombre" placeholder="Ej. Juan Pérez">
     </div>
+
+    <!-- Campo trampa anti-bot: invisible para personas, los bots lo llenan solo -->
+    <input type="text" id="empresa_web" name="empresa_web" autocomplete="off" tabindex="-1"
+      style="position:absolute; left:-9999px; opacity:0; height:0;">
 
     <div class="section">
       <p class="label">Tu WhatsApp</p>
@@ -266,6 +285,13 @@ const SUPABASE_URL = "https://zufackerrxtiaaqaqvme.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1ZmFja2Vycnh0aWFhcWFxdm1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MDc0NjksImV4cCI6MjEwMTk4MzQ2OX0.MfvA9LHf__kKaVaTTG9gxXb4ZbmtsbsSH-23KftXaPY";
 
 async function guardarLeadEnSupabase(payload){
+  // Si el campo trampa tiene contenido, es un bot rellenando el formulario
+  // automáticamente — se descarta en silencio, sin guardar ni avisar nada.
+  const trampa = document.getElementById("empresa_web");
+  if(trampa && trampa.value.trim() !== ""){
+    console.log("Bloqueado por campo trampa (posible bot)");
+    return;
+  }
   try{
     const res = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
       method: "POST",
@@ -287,33 +313,75 @@ async function guardarLeadEnSupabase(payload){
   }
 }
 
-const KITS = [
-  {id:"kit4", label:"Kit de 4 cámaras", price:17495, spec:"Full HD 1080p, color noche y audio"},
-  {id:"kit6", label:"Kit de 6 cámaras", price:22495, spec:"Full HD 1080p, color noche y audio", badge:"Más popular"},
-  {id:"kit8", label:"Kit de 8 cámaras", price:27495, spec:"Full HD 1080p, color noche y audio"},
+const PLANES = [
+  {id:"basico", label:"Básico", desc:"Instalación básica — sin monitor ni acabado estético"},
+  {id:"standard", label:"Standard", desc:"Instalación con monitor", badge:"Más elegido"},
+  {id:"premium", label:"Premium", desc:"Instalación, monitor y acabado estético"},
 ];
 
-const state = { kit:null, sd:null, urg:null };
+const KITS = [
+  {id:"kit4", label:"Kit de 4 cámaras", spec:"Full HD 1080p, color noche y audio"},
+  {id:"kit6", label:"Kit de 6 cámaras", spec:"Full HD 1080p, color noche y audio", badge:"Más popular"},
+  {id:"kit8", label:"Kit de 8 cámaras", spec:"Full HD 1080p, color noche y audio"},
+];
 
-const kitsEl = document.getElementById("kits");
-KITS.forEach(k=>{
+const PRECIOS = {
+  basico:   {kit4:14995, kit6:19995, kit8:24995},
+  standard: {kit4:17495, kit6:22495, kit8:27495},
+  premium:  {kit4:19495, kit6:25495, kit8:31495},
+};
+
+const state = { plan:"standard", kit:null, sd:null, urg:null };
+
+const planesEl = document.getElementById("planes");
+PLANES.forEach(pl=>{
   const div = document.createElement("div");
-  div.className = "kit";
-  div.dataset.id = k.id;
-  div.innerHTML = `
-    <div class="kit-left">
-      <b>${k.label}${k.badge ? `<span class="kit-badge">${k.badge}</span>`:""}</b>
-      <span>${k.spec}</span>
-    </div>
-    <div class="kit-price">RD$${k.price.toLocaleString("es-DO")}</div>`;
+  div.className = "plan" + (pl.id === state.plan ? " selected" : "");
+  div.dataset.id = pl.id;
+  div.innerHTML = `<b>${pl.label}${pl.badge ? ` <span class="kit-badge">${pl.badge}</span>` : ""}</b><span>${pl.desc}</span>`;
   div.addEventListener("click", ()=>{
-    document.querySelectorAll(".kit").forEach(el=>el.classList.remove("selected"));
+    document.querySelectorAll(".plan").forEach(el=>el.classList.remove("selected"));
     div.classList.add("selected");
-    state.kit = k;
+    state.plan = pl.id;
+    renderKits();
     render();
   });
-  kitsEl.appendChild(div);
+  planesEl.appendChild(div);
 });
+
+const kitsEl = document.getElementById("kits");
+function precioActual(kitId){
+  return PRECIOS[state.plan][kitId];
+}
+function renderKits(){
+  kitsEl.innerHTML = "";
+  KITS.forEach(k=>{
+    const precio = precioActual(k.id);
+    const div = document.createElement("div");
+    div.className = "kit" + (state.kit && state.kit.id === k.id ? " selected" : "");
+    div.dataset.id = k.id;
+    div.innerHTML = `
+      <div class="kit-left">
+        <b>${k.label}${k.badge ? `<span class="kit-badge">${k.badge}</span>`:""}</b>
+        <span>${k.spec}</span>
+      </div>
+      <div class="kit-price">RD$${precio.toLocaleString("es-DO")}</div>`;
+    div.addEventListener("click", ()=>{
+      document.querySelectorAll(".kit").forEach(el=>el.classList.remove("selected"));
+      div.classList.add("selected");
+      state.kit = { ...k, price: precioActual(k.id) };
+      render();
+    });
+    kitsEl.appendChild(div);
+  });
+  // Si ya había un kit elegido, refresca su precio al precio del nuevo plan
+  if(state.kit){
+    state.kit = { ...state.kit, price: precioActual(state.kit.id) };
+  }
+}
+renderKits();
+
+let fueraDeZonaGuardado = false;
 
 document.querySelectorAll(".pill[data-group]").forEach(p=>{
   p.addEventListener("click", ()=>{
@@ -322,6 +390,24 @@ document.querySelectorAll(".pill[data-group]").forEach(p=>{
     p.classList.add("selected");
     state[group] = p.dataset.value;
     render();
+
+    // Guarda el lead no calificado en cuanto dice "No", sin esperar a que
+    // deje su correo. Nunca dispara pixel — este tráfico no debe llegarle a Meta.
+    if(group === "sd" && p.dataset.value === "no" && !fueraDeZonaGuardado){
+      fueraDeZonaGuardado = true;
+      guardarLeadEnSupabase({
+        name: document.getElementById("nombre").value.trim() || null,
+        phone: telInput.value.trim() || null,
+        email: null,
+        kit: state.kit ? state.kit.label : null,
+        kit_price: state.kit ? state.kit.price : null,
+        plan: state.plan,
+        lives_in_sd: false,
+        urgency: null,
+        qualified: false,
+        estado: "NO VIVE EN SD"
+      });
+    }
   });
 });
 
@@ -366,8 +452,10 @@ function render(){
 
 function buildMessage(nombre, telefono){
   const urgLabel = {ya_mismo:"Ya mismo", "3_meses":"Dentro de 3 meses", "6_meses":"Dentro de 6 meses"}[state.urg] || "—";
+  const planLabel = PLANES.find(p => p.id === state.plan)?.label || "—";
   return `Hola, soy ${nombre}.
 Quiero cotizar: ${state.kit ? state.kit.label + " (RD$" + state.kit.price.toLocaleString("es-DO") + ")" : "—"}
+🔧 Plan: ${planLabel}
 📍 Vivo en Santo Domingo: Sí
 🕒 Interés: ${urgLabel}
 📱 Mi WhatsApp: ${telefono}`;
@@ -385,6 +473,7 @@ function computeEvent(){
       value,
       currency: "DOP",
       content_name: state.kit ? state.kit.id : null,
+      plan: state.plan,
       urgencia: state.urg
     }
   };
@@ -415,6 +504,7 @@ document.getElementById("ctaBtn").addEventListener("click", ()=>{
     phone: telefono,
     kit: state.kit ? state.kit.label : null,
     kit_price: state.kit ? state.kit.price : null,
+    plan: state.plan,
     lives_in_sd: state.sd === "si",
     urgency: state.urg,
     qualified: evt.should_fire,
@@ -430,14 +520,9 @@ document.getElementById("btnFuera").addEventListener("click", ()=>{
   if(!email || !email.includes("@")){ return; }
   const nombre = document.getElementById("nombre").value.trim();
   const telefono = telInput.value.trim();
-  // Aquí NO se dispara el evento "Lead" calificado — opcionalmente puedes
-  // disparar un evento aparte para remarketing (ej. "LeadFueraDeZona")
-  // sin contaminar la audiencia de leads calificados que alimenta tus campañas.
-  if(typeof fbq === "function"){
-    fbq('trackCustom', 'LeadFueraDeZona', {email});
-  } else {
-    console.log("[Meta Pixel simulado] trackCustom LeadFueraDeZona", {email});
-  }
+  // Este tráfico nunca dispara pixel — el registro al elegir "No" ya se guardó
+  // sin correo; aquí solo se agrega un segundo registro con el correo, para
+  // no arriesgar sobrescribir datos de otros leads con una llave pública.
 
   guardarLeadEnSupabase({
     name: nombre || null,
@@ -445,10 +530,11 @@ document.getElementById("btnFuera").addEventListener("click", ()=>{
     email: email,
     kit: state.kit ? state.kit.label : null,
     kit_price: state.kit ? state.kit.price : null,
+    plan: state.plan,
     lives_in_sd: false,
     urgency: null,
     qualified: false,
-    estado: "NO CALIFICA"
+    estado: "NO VIVE EN SD"
   });
 
   document.getElementById("blocked").innerHTML = "<p>Listo, te avisamos apenas lleguemos a tu zona. 🙌</p>";
