@@ -218,8 +218,9 @@ src="https://www.facebook.com/tr?id=1595311891984063&ev=PageView&noscript=1"
 
     <div class="section">
       <p class="label">Tu WhatsApp</p>
-      <input type="tel" id="telefono" placeholder="809-000-0000">
-      <p class="err" id="telErr">Escribe un número dominicano válido (809/829/849 + 7 dígitos).</p>
+      <input type="tel" id="telefono" placeholder="809-000-0000 o +código país">
+      <p class="hint">¿Vives fuera de RD? Escribe tu número con el código de tu país (ej. +34 600 000 000).</p>
+      <p class="err" id="telErr">Escribe un número válido (RD: 809/829/849 + 7 dígitos, o internacional con código de país).</p>
     </div>
 
     <div class="section">
@@ -395,7 +396,11 @@ document.querySelectorAll(".pill[data-group]").forEach(p=>{
 const telInput = document.getElementById("telefono");
 function telValido(v){
   const digits = v.replace(/\D/g,"");
-  return /^(809|829|849)\d{7}$/.test(digits);
+  // Acepta cualquier número entre 8 y 15 dígitos (rango internacional estándar E.164).
+  // Para RD sigue validando el patrón exacto; para el resto del mundo, solo el largo.
+  const esDominicano = /^(809|829|849)\d{7}$/.test(digits);
+  const largoValido = digits.length >= 8 && digits.length <= 15;
+  return esDominicano || largoValido;
 }
 
 function render(){
