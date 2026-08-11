@@ -263,11 +263,11 @@ const WHATSAPP_NUMBER = "18093234999"; // +1 809-323-4999, sin + ni guiones
 
 // Conexión a Supabase — guarda cada lead calificado en la tabla "leads"
 const SUPABASE_URL = "https://zufackerrxtiaaqaqvme.supabase.co";
-const SUPABASE_KEY = "sb_publishable_4NOeu8UzFcPPut0TUg2g5Q_3vuw-RFP";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1ZmFja2Vycnh0aWFhcWFxdm1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MDc0NjksImV4cCI6MjEwMTk4MzQ2OX0.MfvA9LHf__kKaVaTTG9gxXb4ZbmtsbsSH-23KftXaPY";
 
 async function guardarLeadEnSupabase(payload){
   try{
-    await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -277,6 +277,9 @@ async function guardarLeadEnSupabase(payload){
       },
       body: JSON.stringify(payload)
     });
+    if(!res.ok){
+      console.log("Supabase rechazó el guardado:", res.status, await res.text());
+    }
   } catch(err){
     // Si falla el guardado, no bloquea el envío por WhatsApp — el lead
     // no se pierde, solo no queda respaldado en la base de datos.
@@ -414,7 +417,8 @@ document.getElementById("ctaBtn").addEventListener("click", ()=>{
     kit_price: state.kit ? state.kit.price : null,
     lives_in_sd: state.sd === "si",
     urgency: state.urg,
-    qualified: evt.should_fire
+    qualified: evt.should_fire,
+    estado: evt.should_fire ? "CALIFICA" : "NO CALIFICA"
   });
 
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
@@ -424,6 +428,8 @@ document.getElementById("ctaBtn").addEventListener("click", ()=>{
 document.getElementById("btnFuera").addEventListener("click", ()=>{
   const email = document.getElementById("emailFuera").value.trim();
   if(!email || !email.includes("@")){ return; }
+  const nombre = document.getElementById("nombre").value.trim();
+  const telefono = telInput.value.trim();
   // Aquí NO se dispara el evento "Lead" calificado — opcionalmente puedes
   // disparar un evento aparte para remarketing (ej. "LeadFueraDeZona")
   // sin contaminar la audiencia de leads calificados que alimenta tus campañas.
@@ -432,6 +438,19 @@ document.getElementById("btnFuera").addEventListener("click", ()=>{
   } else {
     console.log("[Meta Pixel simulado] trackCustom LeadFueraDeZona", {email});
   }
+
+  guardarLeadEnSupabase({
+    name: nombre || null,
+    phone: telefono || null,
+    email: email,
+    kit: state.kit ? state.kit.label : null,
+    kit_price: state.kit ? state.kit.price : null,
+    lives_in_sd: false,
+    urgency: null,
+    qualified: false,
+    estado: "NO CALIFICA"
+  });
+
   document.getElementById("blocked").innerHTML = "<p>Listo, te avisamos apenas lleguemos a tu zona. 🙌</p>";
 });
 
