@@ -261,6 +261,29 @@ src="https://www.facebook.com/tr?id=1595311891984063&ev=PageView&noscript=1"
 <script>
 const WHATSAPP_NUMBER = "18093234999"; // +1 809-323-4999, sin + ni guiones
 
+// Conexión a Supabase — guarda cada lead calificado en la tabla "leads"
+const SUPABASE_URL = "https://zufackerrxtiaaqaqvme.supabase.co";
+const SUPABASE_KEY = "sb_publishable_4NOeu8UzFcPPut0TUg2g5Q_3vuw-RFP";
+
+async function guardarLeadEnSupabase(payload){
+  try{
+    await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch(err){
+    // Si falla el guardado, no bloquea el envío por WhatsApp — el lead
+    // no se pierde, solo no queda respaldado en la base de datos.
+    console.log("No se pudo guardar en Supabase:", err);
+  }
+}
+
 const KITS = [
   {id:"kit4", label:"Kit de 4 cámaras", price:17495, spec:"Full HD 1080p, color noche y audio"},
   {id:"kit6", label:"Kit de 6 cámaras", price:22495, spec:"Full HD 1080p, color noche y audio", badge:"Más popular"},
@@ -383,6 +406,16 @@ document.getElementById("ctaBtn").addEventListener("click", ()=>{
       console.log("[Meta Pixel simulado]", evt.event_name, evt.params);
     }
   }
+
+  guardarLeadEnSupabase({
+    name: nombre,
+    phone: telefono,
+    kit: state.kit ? state.kit.label : null,
+    kit_price: state.kit ? state.kit.price : null,
+    lives_in_sd: state.sd === "si",
+    urgency: state.urg,
+    qualified: evt.should_fire
+  });
 
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   window.open(url, "_blank");
